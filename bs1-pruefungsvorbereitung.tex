@@ -1,0 +1,188 @@
+\documentclass[12pt,a4paper,ngerman]{scrartcl}
+
+% Dateikodierung ist latin1%
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage{listings}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage{verbatim} 
+\usepackage{soul}
+\usepackage[normalem]{ulem}
+\usepackage{sectsty}
+\usepackage{varwidth}
+\usepackage{truncate}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{framed}
+\usepackage{mdframed}
+\usepackage{array}
+\usepackage{colortbl}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+% Setting the properties for links, urls etc.
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=blue
+}
+
+\lstset{ %
+  language=C++,                     % the language of the code
+  basicstyle=\footnotesize\ttfamily,    % the size of the fonts that are used for the code
+  numbers=left,                     % where to put the line-numbers
+  numberstyle=\tiny\color{gray},    % the style that is used for the line-numbers
+  stepnumber=1,                     % the step between two line-numbers. If it's 1, each line will be numbered
+  numbersep=5pt,                    % how far the line-numbers are from the code
+  backgroundcolor=\color{white},    % choose the background color. You must add \usepackage{color}
+  extendedchars=true            %
+  showspaces=false,                 % show spaces adding particular underscores
+  showstringspaces=false,           % underline spaces within strings
+  showtabs=false,                   % show tabs within strings adding particular underscores
+  frame=single,                     % adds a frame around the code
+  rulecolor=\color{gray},           % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  tabsize=4,                        % sets default tabsize to 2 spaces
+  captionpos=b,                     % sets the caption-position to bottom
+  breaklines=true,                  % sets automatic line breaking
+  breakatwhitespace=false,          % sets if automatic breaks should only happen at whitespace
+  title=\lstname,                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+  keywordstyle=\color{blue},        % keyword style
+  commentstyle=\color{dkgreen},     % comment style
+  stringstyle=\color{mauve},        % string literal style
+  escapeinside={\%*}{*)},           % if you want to add LaTeX within your code
+  morekeywords={*,...}          % if you want to add more keywords to the set
+}
+
+% Color definitions
+\definecolor{crucial}{RGB}{0,60,0} % This color marks the portions of code that are crucial (see below)
+\definecolor{cream}{RGB}{255,255,204} % highlighting color
+\definecolor{blue}{RGB}{0,0,255}
+
+\newcommand{\hlc}[2][cream]{{\sethlcolor{#1} \hl{#2}}}
+
+\subsectionfont{\normalsize} % We change the sections to have a slightly smaller size
+
+% Crucial marks keywords or statements that are crucial for passing the exam ;-)
+\newcommand{\crucial}[1]{\hlc[cream]{#1}} % Optimized for online reading
+%\newcommand{\crucial}[1]{\textbf{\textcolor{crucial}{\uline{#1}}}} % custom
+%\newcommand{\crucial}[1]{\uline{#1}} % Optimized for print
+
+% Question Command
+\newcommand{\question}[1]{
+	\subsection[\truncate{0.80\textwidth}{#1}]{
+	\textcolor{blue}{#1}}}
+
+\newenvironment{multilinequestion}[1][]
+	{\subsection[\truncate{0.80\textwidth}{#1}]{\textcolor{blue}{#1}} \color{blue}}
+	{}
+
+% Used for the right vertical bar next to the answer blocks
+\newlength\RightBarWidth
+\setlength\RightBarWidth{1pt}
+\newenvironment{rightbar}
+	{
+	\def\FrameCommand##1{%
+	\hspace{\textwidth}\hspace{-\RightBarWidth}%
+	{\color{dkgreen}\vrule width \RightBarWidth}
+	\hspace{-\textwidth}##1\hfill}%
+	\MakeFramed{\addtolength\hsize{-\width-\RightBarWidth-\columnsep}%
+	\FrameRestore}%
+	}
+	{\endMakeFramed}
+
+% Make footnotes available inside frames
+\makeatletter
+
+\newcommand\mystuff@footnotebuffer{}
+\newcounter{mystuff@footnote}
+
+\newcommand\bufferfootnotes{
+	\let\mystuff@footnoteold\footnote
+	\setcounter{mystuff@footnote}{\thefootnote}
+	\renewcommand\mystuff@footnotebuffer{}
+	\renewcommand{\footnote}[1]{
+		\footnotemark
+		\g@addto@macro{\mystuff@footnotebuffer}{
+			\stepcounter{mystuff@footnote}
+			\protect\footnotetext[\themystuff@footnote]{##1}
+		}
+	}
+}
+
+\newcommand\stopbufferingfootnotes{%
+	\mystuff@footnotebuffer%
+	\renewcommand{\footnote}[1]{\mystuff@footnoteold{##1}}%
+}
+
+\makeatother
+
+% Answer environment
+\newenvironment {answer}
+                {\bufferfootnotes\begin{rightbar} }
+                {\end{rightbar}\stopbufferingfootnotes}
+                  
+\title{Betriebssyteme 1 \\ Fragenkatalog \\ WiSe 2012/2013 \\[5pt] \Large{Universität Bremen}}
+\date{\today}
+
+\begin{document}
+
+% Insert title here
+\maketitle
+
+% Abstract section
+\begin{abstract}
+Die hier zusammengetragenen Fragen und Antworten dienen der vorbereitung auf eine Modulprüfung bzw. Fachgespräch im Fach Betriebssysteme 1. Jeder kann dazu beitragen die Antworten zu erweitern, zu verbessern oder zu aktualisieren, indem er die Repository auf Github clont, das Dokument überarbeitet und anschließend Merge-Requests einreicht. Das Repository befindet sich unter  \url{https://github.com/momesana/bs1-fragenkatalog/}.
+\end{abstract}
+
+\newpage
+
+% This inserts the table of contents
+\tableofcontents 
+
+% Templates for question and answer pairs
+%
+% Simple question
+%\question{}
+%\begin{answer}
+%\end{answer}
+%
+% Multilone question: To be used if the question contains images or blocks etc.
+%\begin{multilinequestion}[text to appear in the subsection]
+%\end{multilinequestion}
+%the question that spans many lines
+%\begin{answer}
+%the answer
+%\end{answer}
+
+% This included Fragment contains questions regarding Operating Systems
+\include{fragment_allgemein}
+
+\include{fragment_interprozesskommunikation}
+
+\include{fragment_nebenlaeufigkeit}
+
+\include{fragment_netzwerk}
+
+\include{fragment_scheduling}
+
+\include{fragment_mm}
+
+\include{fragment_sicherheit}
+
+
+% This included Fragment comprises of questions that revolve multithreading
+%\include{fragment_nebenlaeufigkeit}
+
+% This includes network specific subjects
+%\include{fragment_netzwerke}
+
+% This includes security specific subjects
+%\include{fragment_sicherheit}
+
+\end{document}
+
