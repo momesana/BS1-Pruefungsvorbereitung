@@ -1,3 +1,26 @@
 \section{Memory Management}
 
+\subsection*{Nicht Virtuelle Speicherverwaltung}
+
+        direkter Zugriff auf Speicher
+        Swapping
+        Fragmentierung
+        Speicheraddressen stehen nicht zu Compilezeit fest
+        static allocation / dynamic allocation
+     (mit virtuellem Memory Management)
+
+
+
+\subsection*{Virtuelle Speicherverwaltung}
+
+        Abbildung von virtuellen auf physikalischen Adressen
+        Aufteilung des virtuellen Addressraums in Pages
+        Jede Page hat eigene Pagintabelle
+        Hauptspeicher ist unterteilt in Pageframes gleicher Größe
+        Hardwareunterstützung durch MMU
+        Translation lockaside buffer (http://de.wikipedia.org/wiki/Translation_Lookaside_Buffer)
+        Pagefault
+        Segmentation fault
+
+
 
