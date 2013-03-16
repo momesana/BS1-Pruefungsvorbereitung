@@ -1,3 +1,113 @@
 \section{Interprozesskommunikation}
 
+M"oglichkeiten der Interprozesskommunikation kann "uber gemeinsamen Speicher erfolgen. 
+\begin{enumerate}
+	\item Globale Variablen f"ur Threads
+	\item gemeinsam genutze Dateien
+	\item Shared Memory
+	\item User Register
+	\item Umgebungsvariablen
+\end{enumerate} 
+Darüber hinaus ist es m"oglich, Nachrichten an andere Programme zu schicken.
+\begin{enumerate}
+	\item Signale
+	\item Sockets
+	\item Pipes
+\end{enumerate}
 
+Ein Ziel bei der Interprozesskommunikation ist die Serialisierbarkeit. Wenn zwei oder mehr Prozesse durch konkurierende Operationen auf den selben Speicher zugreifen, kann es zu Race Conditions kommen. Konkurierende Operationen hei"sen serialisierbar, wenn eine sequenzielle Ausführung existiert, welche den gemeinsamen Speicher im selben Nachzustand hinterl"asst.
+\\\\
+Def. Race Condition:
+Zwei oder mehr Prozesse (oder Threads) greifen auf gemeinsamen Speicher zu. Das Ergebnis ist nicht deterministisch.
+\\\\
+Def. Kritischer Abschnitt:
+Critical Sections sind Codeabschnitte in meheren Prozessen, deren nebenläufige Ausführung die Serialisierbarkeit verletzen würde. Sie gehen vom laden der Daten bis hin zum Speichern. Der Kritische Abschnitt befindet sich direkt dazwischen. 
+\\\\
+Def. Gegenseitiger Auschluss:
+Die ausführung kritischer Abschnitte schlicßt sich wechselseitig aus (mutual exclusion).
+\\\\
+Der Algorithmus von Peterson ist ein Serialisierungsverfahren f"ur zwei Prozesse. 
+\lstset{language=c} 
+\begin{lstlisting}[breaklines,showstringspaces=false,frame=none] 
+// globale Variablen
+int interested[2] = {0, 0};
+int turn = 0;
+
+void enterCritical(int pid) {
+	interested[pid] = 1;
+	turn = pid;
+
+	while(turn == pid && interested[1-pid]);
+}
+
+void leaveCritical(int pid) {
+	interested[pid] = 0;
+} 
+
+\end{lstlisting} 
+
+Das Protokoll von Fischer gilt auh f"ur mehere Prozesse, jedoch kann es sein, dass ein Prozess niemals in den kritischen Abschnitt eintreten kann. Der Algorithmus ist nicht verhungerungsfrei.
+\lstset{language=c} 
+\begin{lstlisting}[breaklines,showstringspaces=false,frame=none] 
+// globale Variablen
+volatile int turn = 0;
+
+void enterCritical(int pid) {	// pid >= 1
+	do {
+		while(turn != 0);
+		turn = pid;
+
+		sleep();
+	} while(turn != pid);
+}
+
+void leaveCritical(int pid) {
+	turn = 0;
+} 
+
+\end{lstlisting}
+
+Ist ein anderer Prozess in einem kritischen Abschnitt, muss der gerade ausgeführte warten. Ein Verfahren dazu ist das Active Wait Verfahren (Spinlocks). \\
+Vortiel: Keine Betriebssystem Beteiligung\\
+Nachteil: wartender Prozess verbraucht Rechenzeit.
+\\\\
+Def. Priorit"ateninversion:
+P1 hat eine gute Priorit"at, P2 hat keine gute. Der Prozess P2 befindet sich in dem kritischen Abschnitt. Der Scheduler entschlie"st sich, dem h"oher Priorisierten Prozess CPU Zeit zuzuteilen. Da P2 noch in der CS steckt, kann P1 nicht eintreten und vergeudet seine Zeit im Spinlock. 
+\\\\
+Def. Livelock:
+Program Counter ver"andert sich noch, es k"onn jedoch keine Nutzdaten mehr verarbeitet werden.
+\\\\
+Def. kooperatives Multitasking:
+Prozesswechsel erfolgt nur, wenn der Prozess freiwililg die CPU Zeit abgibt. 
+\\\\
+Def. Pr"aemptiver Scheduler:
+k"onnen einem Prozess die CPU Zeit wegnehmen. Werden durch clock interrupts ausgeführt. 
+\\\\
+Der Reader Writer Algorithmus (Non blocking write Protokoll):
+Annahme: nur ein Leser und ein Schreiber.
+Writer beschreibt Datenblock beliebiger L"ange. Der Reader lie"st den Datenblock, verarbeitet jedoch nur die Daten, bei denen er vom Schreiber nicht unterbrochen wurde. Dieses verfahren bezeichnet man als optimistisches Verfahren. Der Schreiber kann immer Schreiben. Der Reader muss prüfen, ob zwischenzeitlich der Schreiber aktiv war, bevor er seine daten verabeiten kann.
+
+\lstset{language=c} 
+\begin{lstlisting}[breaklines,showstringspaces=false,frame=none] 
+// globale Variablen
+int ccF = 0; // Concurency Control Field, 
+
+//Writer:
+	ccF = ccF + 1;
+	// write in buffer
+	ccF = ccF + 1; 
+
+// Reader:
+	do {
+		int ccF_begin, ccF_end;
+		do {
+			ccF_begin = ccF;
+		} while(ccF_begin % 2); // nur lesen wenn gerade
+
+		// Hier wird nun gelesen
+
+		ccF_end = ccF;
+
+	} while(ccF_begin != ccF_end);
+
+\end{lstlisting}
