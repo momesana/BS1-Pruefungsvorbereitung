@@ -2,9 +2,68 @@
 
 \subsection{Signalbehandlung}
 
+\subsubsection{Was sind Signale?}
+Signale dienen der Meldung (von Ausnahmezust"anden) an einen Prozess und sind damit prozessextern. Beispiele für Signale sind u.a. Stop (SIGINT), Kill (SIGKILL) und Terminate (SIGTERM). Signalquellen sind Prozesse, Trap- und Intterupthandler.
+
+\begin{lstlisting}
+static void handler(int signum) {
+    /* Take appropriate action for given signal */
+}
+\end{lstlisting}
+
+Dann kann die Signalbehandlung auf zweierlei Arten erfolgen. Hier zunächst die althergebrachte Weise, die als überholt gilt:
+
+\begin{lstlisting}
+if (signal(SIGINT, handler) == SIG_ERR) {
+	// Fehlerbehandlung
+}
+\end{lstlisting}
+
+Und hier die neuere bevorzugte Methode:
+\begin{lstlisting}
+...
+struct sigaction sa;
+memset(&sa, 0,  sizeof(sa));
+sa.sa_handler = handler;
+// sa.sa_flags = ...;
+if (sigaction(SIGTERM, &sa, NULL) == -1) {
+	// Fehlerbehandlung
+}
+...
+\end{lstlisting}
+
 \subsection{Makefiles}
+Makefiles sind Konfigurationsdateien für das \textit{Build-Management-Tool} \texttt{make}. Nachfolgend ein Beispiel wie ein Makefile aussehen könnte:
+
+\begin{verbatim}
+CC = cc
+LD = ld
+ 
+prog: foo.o bar.o
+        $(LD) -o prog foo.o bar.o
+ 
+foo.o: foo.c
+        $(CC) -c foo.c
+ 
+bar.o: bar.c
+        $(CC) -c bar.c
+\end{verbatim}
 
 \subsection{structs}
+Ein \texttt{struct} fasst mehrere Objekte verschiedener (mitunter komplexer) Datentypen zu einem neuen Datentypen zusammen.
+
+\begin{lstlisting}
+struct account {
+   int account_number;
+   char *first_name;
+   char *last_name;
+   float balance;
+};
+
+struct account s;
+s.account_number = 8;
+...
+\end{lstlisting}
 
 \subsection{Datenstructuren (C++)}
 

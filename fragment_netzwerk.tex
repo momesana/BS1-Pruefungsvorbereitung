@@ -1,47 +1,93 @@
 \section{Netzwerke}
 
 \subsection{Socket}
+Eine bidirektionale Software-Schnittstelle zur Interprozess- (IPC) oder Netzwerk-Kommunikation Ein Kommunikationsendpunkt.
 
-\subsection{Port}
+\begin{description}
+\item[Stream Socket (z.B. TCP/IP)] \hfill \\
+Streamorientiert. In Bezug auf Inhalt und Reihenfolge gesichert (Punkt zu Punkt). Partielle Ordnung (Datenpakete sind in Bezug auf ein und denselben Sender wohlgeordnet.)
+\item[Datagram Socket (z.B. UDP/IP)] \hfill \\
+Datagramm-/Telegrammorientiert. Ungesichert: Verlust von Datagrammen und Vertauschung von Datagrammen. (Ein Telegramm ist nur korrekt, wenn sie zeitlich und inhaltlich korrekt ist).
+\end{description}
 
-\subsection{Unidirectional}
-
-\subsection{Halbduplex}
-
-\subsection{Vollduplex}
-
-\subsection{Broadcat}
-
-\subsection{Multicast}
-
-\subsection{Peer to Peer}
-
-\subsection{Point to Point}
-
-\subsection{OSI Schichten Model}
 
 \subsection{Client / Server}
+Initiator ist nur der Client. Server antwortet nur, wenn er gefragt wird.
 
-\subsection{TCP/IP, UDP/IP}
+\subsubsection{Client}
+\begin{lstlisting}
+s = socket (...); // Socket erstellen
+connect (s, ...); // Mit Socket verbinden
+send (s, ...); // senden! alternativ write, bei UDP sendto()
+recv (s, ...); // empfangen! alternative read. bei UDP recvfrom()
+close (s, ...); // Socket schliessen
+\end{lstlisting}
+
+\subsubsection{Server}
+\begin{lstlisting}
+s = socket (...); // Socket erstellen
+bind (...); Binde Port Adresse
+listen (...); Warte auf Anfragen
+while (1) {
+	s2 = accept (...); // Verbindung annehmen
+	recv (...);
+	send (...);
+	close (s2);
+}
+send(s, ...); // senden! alternativ write, bei UDP sendto()
+recv(s, ...); // empfangen! alternative read. bei UDP recvfrom()
+close(s, ...); // Socket schliessen
+\end{lstlisting}
+
+\subsection{OSI Schichten Model}
+ein Referenzmodell für Netzwerkprotokolle als Schichtenarchitektur. Die Schichten sind wie folgt:
+
+\begin{enumerate}
+\item[Schicht 7] – Anwendungsschicht
+\item Schicht 6] – Darstellungsschicht
+\item Schicht 5] – Sitzungsschicht
+\item[Schicht 4] – Transportschicht
+\item[Schicht 3] – Vermittlungsschicht
+\item[Schicht 2] – Sicherungsschicht
+\item[Schicht 1] – Bit"ubertragungsschicht
+
+\end{enumerate}
+
+\subsection{Port}
+Ein Port ist der Teil einer Netzwerk-Adresse, der die Zuordnung von TCP- und UDP-Verbindungen und -Datenpaketen zu Server- und Client-Programmen durch Betriebssysteme bewirkt. (Quelle: Wikipedia).
+
+Ports dienen zwei Zwecken:
+\begin{itemize}
+\item Primär sind Ports ein Merkmal zur Unterscheidung mehrerer Verbindungen zwischen demselben Paar von Endpunkten.[1]
+\item Ports können auch Netzwerkprotokolle und entsprechende Netzwerkdienste identifizieren.
+\end{itemize}
+
+\subsection{Kommunikationsarten}
+
+\begin{description}
+\item[Unidirektional] \hfill \\
+\item[Halbduplex] \hfill \\
+\item[Vollduplex] \hfill \\
+\item[Broadcast] \hfill \\
+\item[Multicast] \hfill \\
+\item[Point to Point] \hfill \\
+\end{description}
 
 \subsection{sigpipe}
 
-\subsection{memset}
 
 \subsection{Wiederverwendung von Ports}
 
 \subsection{Ethernet packet und ethernet frame}
 
 \subsection{MTU}
+Die Maximum Transmission Unit (MTU) beschreibt die maximale Paketgröße eines Protokolls der Vermittlungsschicht (Schicht 3) des OSI-Modells, welche ohne Fragmentierung in den Rahmen (engl. "Frame") eines Netzes der Sicherungsschicht (Schicht 2) übertragen werden kann. (Wikipedia: http://de.wikipedia.org/wiki/Maximum\_Transmission\_Unit)
 
 \subsection{packete defragmentieren}
+MTU Einstellung ...
 
 \subsection{IP Header}
 
 \subsection{UDP Header}
-
-\subsection{Aufbau einer Netzwerkverbindung (Client / Server, UDP / TCP)}
-
-\subsection{Varianten des Schreibens / Lesens}
 
 \subsection{select / poll}

@@ -1,6 +1,15 @@
 \section{Scheduling}
 
+\subsection{Scheduling Policies}
+
+\begin{itemize}
+\item nicht faire policies
+\item faire policies
+\item real time policies
+\end{itemize}
+
 \subsection{Prozesse}
+Programm in ausführung
 
 \subsection{Threads}
 
@@ -9,8 +18,15 @@
 \subsection{Userthreads / Kernelthreads}
 
 \subsection{Schwache Fairness}
+Jeder kontinuierlich rechenbereite Prozess bekommt immer wieder die CPU.
+
+$$(\forall i \geq 0 : p \in  R_{i}) \Rightarrow (\forall j \geq 0 : \exists j \geq 0 : p = P_{i+j})$$
 
 \subsection{Starke Fairness}
+
+Jeder unendlich oft rechenbereite Prozess bekommt immer wieder die CPUh
+$$(\forall i \geq 0 : \exists j \geq 0 : p \in  R_{i + j}) \Rightarrow (\forall j \geq 0 : \exists j \geq 0 : p = P_{i+j})$$
+
 
 \subsection{Universell fairer Scheduler}
 

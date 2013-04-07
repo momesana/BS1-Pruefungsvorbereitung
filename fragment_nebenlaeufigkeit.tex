@@ -1,69 +1,321 @@
 \section{Nebenläufigkeit}
 
     
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-  
-    
-    
-
-    
 \subsection{Race conditions}
+Ein \textbf{race condition} ist in der Programmierung eine Konstellation, in der das \crucial{Ergebnis einer Operation vom zeitlichen Verhalten (bzw. Ausf"uhrungsreihenfolge) bestimmter Einzeloperationen abh"angt}. Das Ergebnis wäre also nichtdeterministisch.
+
+\subsection{Synchronisation}
+Die Synchronisation dient dem \crucial{Zweck} \crucial{racing conditions} zu \crucial{vermeiden}. Das \crucial{Ziel} der Synchronisation ist die \crucial{Serialisierbarkeit!}
 
 \subsection{Serialisierbarkeit}
+\crucial{Reihenfolge bei konkurrierendem Zugriff entspricht seriellem Zugriff}.
+
+\paragraph*{}
+Beispiel: Prozesse $P_1, ..., P_n$ operieren auf eine Datenstruktur $d$. Die konkurrierende Operationen auf $d$ heißt serialisierbar, wenn es eine sequentielle Ausführung $P_{i_{1}}, P_{i_{2}}, ..., P_{i_{n}}$ gibt, die $d$ im selben Nachzustand hinterlässt.
 
 \subsection{Critical Section}
+\crucial{Code-Abschnitte in Prozesse $P_1, ..., P_2$ deren nebenl"aufige Ausf"uhrung die Serialisierbarkeit verletzen w"urde}.
 
 \subsection{Mutual Exclusion}
+\crucial{Die Ausf"uhrung im critical section schlie"st sich Wechselseitig aus}.
 
 \subsection{Peterson's Algorithmus}
 
-\subsection{Strict alternation}
+Aufruf durch einen Prozess:
+\begin{lstlisting}
+enter(pid); // pid is 0 or 1
+// process CS...
+leave(pid);
+\end{lstlisting}
+
+
+\begin{lstlisting}
+// global
+int turn; // 0 or 1
+int interested[] = {0, 0}
+
+void enter(int pid) { // pid is either 0 or 1
+	interested[pid] = 1;
+	turn = pid;
+	while (turn == pid && interested[1-pid]); // active wait
+}
+
+void leave(int pid) {
+	interested[pid] = 0;
+}
+\end{lstlisting}
+
+
+\subsection{Strict Alternation}
+Wandelt man Peterson's Algorithmus leicht ab, indem man sich der \texttt{interested} variable entledigt ist das Resultat \textbf{strict alternation}. Dabei wartet ein Prozess so lange, bis ein anderer Prozess versucht in die critical section einzutreten. Erst dann kann er die kritische Sektion betreten.
+
+\begin{lstlisting}
+// global
+int turn; // 0 or 1
+
+void enter_critical(int pid) { // pid is either 0 or 1
+	turn = pid;
+	while (turn == pid); // active wait
+}
+\end{lstlisting}
+
 
 \subsection{Fischers Protokoll}
+\begin{lstlisting}
+// globale Variablen 
+volatile int turn = 0; 
+void enterCritical(int pid) {	// pid >= 1 	
+	do { 		
+		while(turn != 0); 		
+		turn = pid; 	
+	} while(turn != pid); 
+} 
+
+void leaveCritical(int pid) { 	turn = 0; } 
+\end{lstlisting}
+
+Nachteil: Ein Prozess könnte theoretisch verhungern.
 
 \subsection{Verhungerungsfreiheit (Free of Starvation)}
+Wenn ein Prozess kontinuierlich bereit ist, bekommt er schließlich die Ressource (critical section).
 
 \subsection{Spinlocks (Active Wait)}
+Aktives Warten (spinlock) ist das \crucial{Verharren} eines Prozesses \crucial{in einer Schleife, bis} der zu betretende \crucial{kritische Abschnitt} wieder \crucial{frei ist}.
+
+
+% A table may be more appropriate
+\begin{description}
+\item[Vorteil:] \hfill \\
+	Keine Betriebssystem-Beteiligung (kein teurer Kontextwechsel erforderlich)
+\item[Nachteil:] \hfill \\
+	Wartende Prozesse verbrauchen Rechenzeit
+\end{description}
+
+\begin{verbatim}
+    Gemeinsam von A und B genutzte Variable: lock
+    Interpretation des Werts:                0 gesperrt, ungleich 0 offen 
+    Initialisierung:                         lock = 0
+           
+    Prozess A                    Prozess B
+       ...                          ...
+       solange (lock == 0) {        ...
+          ;                         lock = 1; Aktion b
+       }                            ...
+       Aktion a                     ...
+\end{verbatim}
 
 \subsection{Prioriäten Inversion}
+Szenario: P1 (gute Priorität), P2 (schlechte Priorität) werden auf einem core ausgeführt. P2 kommt in die CS und P1 muss aktiv warten.
+
+\paragraph*{Wirkung:}
+P1 bekommt mehr Rechenzeit, die aber in AW (aktive wait) vergeudet wird, da P2 vom Scheduler aufgrund seiner schlechten Priorität immer wieder unterbrochen wird und die CS noch nicht verlassen hat.
 
 \subsection{Lifelock}
+\crucial{Keine Nutzdatenverarbeitung obwohl sich der Programmcounter "andert}. Im gegensatz dazu stehen bei einem Deadlock alle Programmcounter fest.
 
-\subsection{Kooperatives Multitasking (präemptives Scheduling)}
+\subsection{Kooperatives Multitasking und präemptives Scheduling}
+
+\begin{description}
+\item [Kooperatives Multitasking] \hfill \\
+	Prozesswechsel erfolgt \ul{nur}, wenn der aktive Prozess \ul{freiwillig} die CPU wieder abgibt. (sogenanntes nicht-präemptives Scheduling)
+\item [Präemptives Scheduling] \hfill \\
+	Pr"aemptive Scheduler k"onnen einem aktiven Prozess die CPU \uline{entziehen} (Technik: Clockinterrupt führt zum Scheduler-Aufruf).
+\end{description}
+
 
 \subsection{Reader / Writer (nonblocking write protocol)}
- Annahme: 1 x leser und 1 x schreiber
+Annahme: 1 leser (liest den Datenblock) und 1 schreiber (beschreibt den Datenblock) \\
+Ziel: Der Reader verarbeitet nur konsistene Daten, bei denen er beim Lesen nicht durch den Writer unterbrochen wurde.
+
+\subsubsection{Optimistisches Verfahren}
+\begin{enumerate}
+\item Writer darf immer schreiben
+\item Reader liest \crucial{optimistisch}, prüft dann , ob die Daten konsistent sind
+\end{enumerate}
+
+\begin{lstlisting}
+// global variables
+int ccf = 0;
+\end{lstlisting}
+
+\begin{lstlisting}
+// writer
+ccf = ccf + 1;
+// write data
+ccf = ccf + 1; 
+\end{lstlisting}
+
+\begin{lstlisting}
+// reader
+do {
+	int ccfbegin, ccfend;
+	do {
+		ccfbegin = ccf;
+	} while (ccfbegin % 2);
+	// read data
+	ccfend = ccf;
+} while (ccfbegin != ccfend);
+\end{lstlisting}
+
 
 \subsection{Ringpuffer}
 
-\subsection{Semaphoren (producer / consumer Problem)}
+\subsubsection{Eigenschaften}
+\begin{itemize}
+\item Reader-Writer Kommunikation mit einem Leser und einem Schreiber
+\item FIFO-Buffer
+\item Ohne Betriebssystem-Beteiligung
+\item Ungelesene Daten dürfen \uline{noch} nicht überschrieben werden
+\item ungeschriebene Daten dürfen \uline{noch} nicht gelesen werden
+\item Puffer ist leer, wenn \texttt{rIdx == wIdx}
+\item Puffer ist voll, wenn \verb|(wIdx + 1) % n == rIdx|
+\item Bedingung fürs Lesen \texttt{(rIdx != wIdx)}
+\item Bedingung fürs Schreiben \verb|(wIdx + 1) % n != rIdx|
+\item Bei einer Arraygröße von $n$ ergibt sich eine Kapazität von $n -1$
+\item \verb|%| (Modulo) Operation ist unter umst"anden teuer. W"ahle $n=2^k$ mit 
+$k \in \mathbb{N}$ und ersetze \verb|%n| durch \verb|&(1<<k)-1|
+\end{itemize}
+
+\begin{lstlisting}
+void write(t in) {
+	unsigned nextWIdx = (wIdx + 1) % n;
+	while (nextWIdx == rIdx); // spinlock
+	buffer[wIdx] = in; // write
+	wIdx = nextWIdx; // update write index
+}
+
+t read() {
+	t out;
+	while (rIdx == wIdx); // spinlock
+	out = buffer[rIdx]; 
+	rIdx = (rIdx + 1) % n;
+	return out;
+}
+\end{lstlisting}
+
+\subsection{Implementierung des Consumer Producer Konzeptes mit Semaphoren}
+
+\subsubsection{Semaphoren}
+
+Semaphoren dienen der Sicherung von kritischen Abschnitten. Sie verfügbt über zwei grundlegende Funktionen:
+
+\begin{enumerate}
+\item lock anfordern
+\item lock freigeben
+\end{enumerate}
+
+\begin{itemize}
+\item lock wird angefordert
+\item wenn der lock nicht verfügbar ist, wird der Prozess schlafen gelegt (aus der Liste der aktiven Prozesse (runqueue) entfernt)
+\item wenn lock bezogen wurde
+\end{itemize}
 
 \begin{description}
-\item semget (erzeugen einer oder mehrerer Semaphoren)
-\item semctl (Initialisierung der Semaphoren)
-\item semop (...)
+\item[semget] \hfill \\
+	 Semaphore beantragen
+\item[semctl] \hfill \\
+	 Initialisierung der Semaphore
+\item[semop] \hfill \\
+	Manipulieren der Semaphore
 \end{description}
+
+\begin{lstlisting}
+int max = 30;
+MyType a[max];
+unsigned int ni = 0;	// number of items
+Semaphore mutex(1);
+Sempahore aItems[0]; 	// available items
+Semaphore aPlaces[max];	// available places
+
+// Producer
+aPlaces.down(1);
+mutex.down(1);
+//critical section ...
+a[ni] = item; // bei structs / strings verwendet man memcpy
+ni = ni + 1;
+mutex.up(1);
+aItems.up(1);
+
+// Consumer
+aItem.down(1);
+mutex.down(1);
+//critical section;
+myType myItem = a[ni-1];
+ni = ni - 1;
+mutex.up(1);
+aPlaces.up(1);
+\end{lstlisting}
+
     
-\subsection{wartegraphen}
+\subsection{Wartegraphen (Ziel: Deadlock-Erkennung)}
 
-\subsubsection{Deadlockvermeidung}
+\subsubsection{Deadlock-Bedingung}
+Alle Prozesse liegen in einer starken Zusammenhangskomponente des Wartegraphen, aus der kein Weg hinausführt, bzw. Wege hinaus wieder in starke Zusammenhangskomponenten führen.
 
-\subsubsection{Starke Zusammenhangskomponenten (Tarjan)}
+\subsubsection{Welche Prozesse sind im Deadlock?}
+Alle Prozesse, die in der gegenwärtigen (vom Deadlock betroffenen) SCC enthalten sind und alle die in SCC's liegen, die von diesem abhängen.
+
+\subsubsection{Deadlockvermeidung oder Auflöusng}
+\begin{itemize}
+\item[Ignorieren] Wenn ein Deadlock selten auftritt und eine Lösung aufwändig wäre, könnte man ihn unter Umständen ignorieren, wenn das Kosten-Nutzen Verhältnis nicht dagegen spricht.
+
+\item[Betriebsmittelgraphen-Analyse] Untersuchung des Betriebsmittelgraphen (Tarjan) und Aufheben des Deadlocks durch Zwangsentfernen eines Prozesses.
+
+\item[Exklusivität] Spooling
+
+\item[Alles auf einmal angefordern] Man könnte alle Ressourcen auf einmal anfordern, was aber eine große Ressourcenverschwendung darstellt
+
+\item[Zyklus verhindern] Ressourcen nur nach aufsteigender Nummer anfordern und belegen.
+
+\item[Bankiersalgorithmus] Maximale Anforderung der Betriebsmittel und ihre Verfügbarkeit müssen im voraus bekannt sein.
+\end{itemize}
+
+\subsubsection{Deadlock-Erkennung: Starke Zusammenhangskomponenten (Tarjan)}
+\begin{verbatim}
+Eingabe: Graph G = (V, E)
+
+maxdfs := 0                      // Zähler für dfs
+U := V                           // Menge der unbesuchten Knoten
+S := {}                          // Stack zu Beginn leer
+while (es gibt ein v in U) do   // Solange es bis jetzt unerreichbare Knoten gibt
+  tarjan(v)                     // Aufruf arbeitet alle von v0 erreichbaren Knoten ab
+end while
+\end{verbatim}
+
+\begin{verbatim}
+procedure tarjan(v)
+v.dfs := maxdfs;           // Tiefensuchindex setzen
+v.lowlink := maxdfs;       // v.lowlink <= v.dfs
+maxdfs := maxdfs + 1;      // Zähler erhöhen
+S.push(v);                 // v auf Stack setzen
+U := U \ {v};              // v aus U entfernen
+forall (v, v') in E do     // benachbarte Knoten betrachten
+  if (v' in U)
+    tarjan(v');            // rekursiver Aufruf
+    v.lowlink := min(v.lowlink, v'.lowlink);
+  // Abfragen, ob v' im Stack ist. 
+  // Bei geschickter Realisierung in O(1).
+  // (z.B. Setzen eines Bits beim Knoten beim "push" und "pop") 
+  elseif (v' in S)
+    v.lowlink := min(v.lowlink, v'.dfs);
+  end if
+end for
+if (v.lowlink = v.dfs)     // Wurzel einer SZK
+  print "SZK:";
+  repeat
+    v' := S.pop;
+    print v';
+  until (v' = v);
+end if
+\end{verbatim}
 
 \subsection{shared memory}
 
 \begin{description}
-\item shmget (liefert nummer zurück)
-\item shmat (bilde shared memory im lokalen addressraum ab)
+\item [shmget] \hfill \\ Erstellt oder bezieht vorhandenen gemeinsamen Speicher über eine Key. (liefert die segment id zurück)
+\item [shmat] \hfill \\ Bindet gemeinsamen Speicher ein (bildet shared memory im lokalen addressraum ab)
+\item [shmdt] \hfill \\ Entfernt (detach) den gemeinsamen Speicher
+\item [shmctl] \hfill \\ Kann z.B. dazu dienen shared memory komplett zu entfernen.
 \end{description}
 
 \subsection{pthreads}
